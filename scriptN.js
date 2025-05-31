@@ -12,35 +12,40 @@ function secondsToMinutesSeconds(seconds) {
 }
 
 // Fetch songs.json from the songs folder
-async function getSongs() {
-    let response = await fetch(`songs/songs.json`);
-    songs = await response.json();
+async function getSongs(folder) {
+    try {
+        let response = await fetch(`songs/${folder}/songs.json`);
+        if (!response.ok) throw new Error(`Failed to load songs.json from ${folder}`);
+        songs = await response.json();
 
-    let songUL = document.querySelector(".songList ul");
-    songUL.innerHTML = "";
+        let songUL = document.querySelector(".songList ul");
+        songUL.innerHTML = "";
 
-    for (const song of songs) {
-        songUL.innerHTML += `
-            <li>
-                <img class="invert" width="34" src="img/music.svg" alt="">
-                <div class="info">
-                    <div>${song}</div>
-                    <div>Yash</div>
-                </div>
-                <div class="playnow">
-                    <span>Play Now</span>
-                    <img class="invert" src="img/play2.svg" alt="">
-                </div>
-            </li>`;
+        for (const song of songs) {
+            songUL.innerHTML += `
+                <li>
+                    <img class="invert" width="34" src="img/music.svg" alt="">
+                    <div class="info">
+                        <div>${song}</div>
+                        <div>Yash</div>
+                    </div>
+                    <div class="playnow">
+                        <span>Play Now</span>
+                        <img class="invert" src="img/play2.svg" alt="">
+                    </div>
+                </li>`;
+        }
+
+        // Attach click events to play music on click
+        Array.from(document.querySelectorAll(".songList li")).forEach((li, index) => {
+            li.addEventListener("click", () => playMusic(`songs/${folder}/${songs[index]}`));
+        });
+
+    } catch (error) {
+        console.error('Error loading songs:', error);
     }
-
-    // Attach click events
-    Array.from(document.querySelectorAll(".songList li")).forEach((li, index) => {
-        li.addEventListener("click", () => playMusic(songs[index]));
-    });
-
-    return songs;
 }
+
 
 function playMusic(track, pause = false) {
     currentSong.src = `songs/${track}`;
