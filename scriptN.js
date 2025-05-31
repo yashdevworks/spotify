@@ -14,6 +14,8 @@ function secondsToMinutesSeconds(seconds) {
 // Fetch songs.json from the songs folder
 async function getSongs(folder) {
     try {
+        currFolder = folder; // ✅ Track current folder
+
         let response = await fetch(`songs/${folder}/songs.json`);
         if (!response.ok) throw new Error(`Failed to load songs.json from ${folder}`);
         songs = await response.json();
@@ -36,15 +38,15 @@ async function getSongs(folder) {
                 </li>`;
         }
 
-        // Attach click events to play music on click
         Array.from(document.querySelectorAll(".songList li")).forEach((li, index) => {
-            li.addEventListener("click", () => playMusic(`songs/${folder}/${songs[index]}`));
+            li.addEventListener("click", () => playMusic(`${folder}/${songs[index]}`));
         });
 
     } catch (error) {
         console.error('Error loading songs:', error);
     }
 }
+
 
 
 function playMusic(track, pause = false) {
@@ -58,8 +60,14 @@ function playMusic(track, pause = false) {
 }
 
 async function main() {
-    await getSongs();
-    playMusic(songs[0], true);
+    console.log("Lets go");
+
+    // Load albums dynamically
+    await displayAlbums();
+
+    // Optionally load default album (if you want)
+    // await getSongs("ncs");
+    // playMusic(songs[0], true);
 
     // Play/Pause button
     document.getElementById("play").addEventListener("click", () => {
@@ -74,7 +82,7 @@ async function main() {
 
     // Time update
     currentSong.addEventListener("timeupdate", () => {
-        document.querySelector(".songtime").innerHTML = 
+        document.querySelector(".songtime").innerHTML =
             `${secondsToMinutesSeconds(currentSong.currentTime)} / ${secondsToMinutesSeconds(currentSong.duration)}`;
         document.querySelector(".circle").style.left = (currentSong.currentTime / currentSong.duration) * 100 + "%";
     });
@@ -88,13 +96,13 @@ async function main() {
     // Previous
     document.getElementById("previous").addEventListener("click", () => {
         let index = songs.indexOf(currentSong.src.split("/").pop());
-        if (index > 0) playMusic(songs[index - 1]);
+        if (index > 0) playMusic(`${currFolder}/${songs[index - 1]}`);
     });
 
     // Next
     document.getElementById("next").addEventListener("click", () => {
         let index = songs.indexOf(currentSong.src.split("/").pop());
-        if (index < songs.length - 1) playMusic(songs[index + 1]);
+        if (index < songs.length - 1) playMusic(`${currFolder}/${songs[index + 1]}`);
     });
 
     // Volume control
@@ -115,5 +123,3 @@ async function main() {
         }
     });
 }
-
-main();
